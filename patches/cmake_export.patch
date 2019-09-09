@@ -1,0 +1,253 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 873cc7b..a19ceee 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -50,7 +50,7 @@ option(WITH_24BPP "Allow 24 bpp" ON)
+ option(WITH_IPv6 "Enable IPv6 Support" ON)
+ option(WITH_WEBSOCKETS "Build with websockets support" ON)
+ option(WITH_SASL "Build with SASL support" ON)
+-
++option(BUILD_EXAMPLES "Build examples" OFF)
+ 
+ 
+ if(WITH_ZLIB)
+@@ -546,23 +546,23 @@ if(FFMPEG_FOUND)
+   )
+ endif(FFMPEG_FOUND)
+ 
+-
+-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/examples)
+-foreach(e ${LIBVNCSERVER_EXAMPLES})
+-  add_executable(examples_${e} ${LIBVNCSRVEXAMPLE_DIR}/${e}.c)
+-  set_target_properties(examples_${e} PROPERTIES OUTPUT_NAME ${e})
+-  set_target_properties(examples_${e} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/examples)
+-  target_link_libraries(examples_${e} vncserver ${CMAKE_THREAD_LIBS_INIT})
+-endforeach(e ${LIBVNCSERVER_EXAMPLES})
+-
+-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/client_examples)
+-foreach(e ${LIBVNCCLIENT_EXAMPLES})
+-  add_executable(client_examples_${e} ${LIBVNCCLIEXAMPLE_DIR}/${e}.c ${LIBVNCCLIEXAMPLE_DIR}/${${e}_EXTRA_SOURCES} )
+-  set_target_properties(client_examples_${e} PROPERTIES OUTPUT_NAME ${e})
+-  set_target_properties(client_examples_${e} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/client_examples)
+-  target_link_libraries(client_examples_${e} vncclient ${CMAKE_THREAD_LIBS_INIT} ${SDL2_LIBRARY} ${FFMPEG_LIBRARIES})
+-endforeach(e ${LIBVNCCLIENT_EXAMPLES})
+-
++if(BUILD_EXAMPLES)
++    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/examples)
++    foreach(e ${LIBVNCSERVER_EXAMPLES})
++        add_executable(examples_${e} ${LIBVNCSRVEXAMPLE_DIR}/${e}.c)
++        set_target_properties(examples_${e} PROPERTIES OUTPUT_NAME ${e})
++        set_target_properties(examples_${e} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/examples)
++        target_link_libraries(examples_${e} vncserver ${CMAKE_THREAD_LIBS_INIT})
++    endforeach(e ${LIBVNCSERVER_EXAMPLES})
++
++    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/client_examples)
++    foreach(e ${LIBVNCCLIENT_EXAMPLES})
++        add_executable(client_examples_${e} ${LIBVNCCLIEXAMPLE_DIR}/${e}.c ${LIBVNCCLIEXAMPLE_DIR}/${${e}_EXTRA_SOURCES} )
++        set_target_properties(client_examples_${e} PROPERTIES OUTPUT_NAME ${e})
++        set_target_properties(client_examples_${e} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/client_examples)
++        target_link_libraries(client_examples_${e} vncclient ${CMAKE_THREAD_LIBS_INIT} ${SDL2_LIBRARY} ${FFMPEG_LIBRARIES})
++    endforeach(e ${LIBVNCCLIENT_EXAMPLES})
++endif()
+ 
+ #
+ # them tests
+@@ -681,3 +681,8 @@ install_files(/lib/pkgconfig FILES
+     libvncserver.pc
+     libvncclient.pc
+ )
++
++  include("cmake/install_functions.cmake")
++  libvncserver__install_target(vncserver)
++  libvncserver__install_target(vncclient)
++  libvncserver__install_config_files()
+diff --git a/cmake/LibVNCServerBuildOptions.cmake.in b/cmake/LibVNCServerBuildOptions.cmake.in
+new file mode 100644
+index 0000000..3fae602
+--- /dev/null
++++ b/cmake/LibVNCServerBuildOptions.cmake.in
+@@ -0,0 +1,15 @@
++
++
++set(LIBVNCSERVER_BUILD_vncserver ${LIBVNCSERVER_BUILD_vncserver})
++set(LIBVNCSERVER_BUILD_vncclient ${LIBVNCSERVER_BUILD_vncclient})
++set(LIBVNCSERVER_BUILD_test ${LIBVNCSERVER_BUILD_test})
++set(LIBVNCSERVER_use_zlib_compression ${LIBVNCSERVER_use_zlib_compression})
++set(LIBVNCSERVER_use_jpeg_compression ${LIBVNCSERVER_use_jpeg_compression})
++set(LIBVNCSERVER_use_png_compression ${LIBVNCSERVER_use_png_compression})
++set(LIBVNCSERVER_use_gnutls ${LIBVNCSERVER_use_gnutls})
++set(LIBVNCSERVER_use_openssl ${LIBVNCSERVER_use_openssl})
++set(LIBVNCSERVER_WITH_WEBSOCKETS ${LIBVNCSERVER_WITH_WEBSOCKETS})
++set(LIBVNCSERVER_ALLOW24BPP ${LIBVNCSERVER_ALLOW24BPP})
++set(TIGHTVNC_FILETRANSFER ${TIGHTVNC_FILETRANSFER})
++
++set(LIBVNCSERVER_WITH_CLIENT_GCRYPT ${LIBVNCSERVER_WITH_CLIENT_GCRYPT})
+diff --git a/cmake/LibVNCServerConfig.cmake b/cmake/LibVNCServerConfig.cmake
+new file mode 100644
+index 0000000..5b4b9c1
+--- /dev/null
++++ b/cmake/LibVNCServerConfig.cmake
+@@ -0,0 +1,7 @@
++
++include("${CMAKE_CURRENT_LIST_DIR}/LibVNCServerBuildOptions.cmake")
++include("${CMAKE_CURRENT_LIST_DIR}/LibVNCServerDependencies.cmake")
++
++
++include("${CMAKE_CURRENT_LIST_DIR}/vncclientTargets.cmake")
++include("${CMAKE_CURRENT_LIST_DIR}/vncserverTargets.cmake")
+diff --git a/cmake/LibVNCServerDependencies.cmake b/cmake/LibVNCServerDependencies.cmake
+new file mode 100644
+index 0000000..2711c1c
+--- /dev/null
++++ b/cmake/LibVNCServerDependencies.cmake
+@@ -0,0 +1,47 @@
++
++include(CMakeFindDependencyMacro)
++
++
++
++if (LIBVNCSERVER_use_zlib_compression)
++    find_dependency(ZLIB)
++endif()
++
++if (LIBVNCSERVER_use_jpeg_compression)
++    find_dependency(JPEG)
++endif()
++
++if (LIBVNCSERVER_use_png_compression)
++    find_dependency(PNG)
++endif()
++
++if (LIBVNCSERVER_BUILD_test)
++    find_dependency(SDL)
++    find_dependency(X11)
++endif()
++
++if (TIGHTVNC_FILETRANSFER)
++    find_dependency(Threads)
++endif()
++
++if (LIBVNCSERVER_use_gnutls)
++    find_dependency(GnuTLS)
++endif()
++
++if (LIBVNCSERVER_use_openssl)
++    find_dependency(OpenSSL)
++endif()
++
++
++if (LIBVNCSERVER_WITH_CLIENT_GCRYPT)
++    set(_save_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
++    list(
++        APPEND
++        CMAKE_MODULE_PATH
++        ${CMAKE_CURRENT_LIST_DIR}/Modules
++        )
++
++    find_dependency(Libgcrypt)
++
++    set(CMAKE_MODULE_PATH ${_save_CMAKE_MODULE_PATH})
++endif()
+diff --git a/cmake/install_functions.cmake b/cmake/install_functions.cmake
+new file mode 100644
+index 0000000..be564d1
+--- /dev/null
++++ b/cmake/install_functions.cmake
+@@ -0,0 +1,97 @@
++
++# absolute path of LibVNCServer/cmake/install directory
++set(LIBVNCSERVER__CMAKE__INSTALL__DIRECTORY "${CMAKE_CURRENT_LIST_DIR}")
++set(LIBVNCSERVER__CMAKE__MODULE__DIRECTORY "${PROJECT_SOURCE_DIR}/cmake/Modules")
++
++# path where config files will be installed, relative to CMAKE_INSTALL_PREFIX
++set(ConfigPackageLocation lib/cmake/LibVNCServer)
++
++# directory name where .dll/.so/.dylib will be installed, relative to CMAKE_INSTALL_PREFIX
++if(WIN32)
++    set(LIBRARY_INSTALL_DIR bin)
++else()
++    set(LIBRARY_INSTALL_DIR lib)
++endif()
++
++
++# install a target, and its Targets.cmake file
++function(libvncserver__install_target target_name)
++    install(
++        TARGETS
++            ${target_name}
++        EXPORT
++            ${target_name}Targets
++        ARCHIVE DESTINATION lib
++        LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR}
++        RUNTIME DESTINATION bin
++        INCLUDES DESTINATION include
++    )
++    export(EXPORT ${target_name}Targets
++        FILE "${CMAKE_CURRENT_BINARY_DIR}/${target_name}Targets.cmake"
++        NAMESPACE LibVNCServer::
++    )
++    install(EXPORT ${target_name}Targets
++        FILE
++            ${target_name}Targets.cmake
++        NAMESPACE
++            LibVNCServer::
++        DESTINATION
++            ${ConfigPackageLocation}
++    )
++endfunction()
++
++
++# install config files LibVNCServerConfig.cmake and friends
++function(libvncserver__install_config_files)
++
++    # configure and install Config files
++    configure_file(
++        "${LIBVNCSERVER__CMAKE__INSTALL__DIRECTORY}/LibVNCServerConfig.cmake"
++        "${CMAKE_BINARY_DIR}/${ConfigPackageLocation}/LibVNCServerConfig.cmake"
++        COPYONLY
++    )
++
++    # configure and install Dependencies files
++    configure_file(
++        "${LIBVNCSERVER__CMAKE__INSTALL__DIRECTORY}/LibVNCServerDependencies.cmake"
++        "${CMAKE_BINARY_DIR}/${ConfigPackageLocation}/LibVNCServerDependencies.cmake"
++        COPYONLY
++    )
++
++    # configure Version files
++    include(CMakePackageConfigHelpers)
++    write_basic_package_version_file(
++        "${CMAKE_BINARY_DIR}/${ConfigPackageLocation}/LibVNCServerConfigVersion.cmake"
++        VERSION ${PACKAGE_VERSION}
++        COMPATIBILITY AnyNewerVersion
++        )
++
++    # configure and install BuildOptions files
++    configure_file(
++        "${LIBVNCSERVER__CMAKE__INSTALL__DIRECTORY}/LibVNCServerBuildOptions.cmake.in"
++        "${CMAKE_BINARY_DIR}/${ConfigPackageLocation}/LibVNCServerBuildOptions.cmake"
++        )
++
++    # install BuildOptions/Config/Dependencies/Version files
++    install(
++        FILES
++            "${CMAKE_BINARY_DIR}/${ConfigPackageLocation}/LibVNCServerBuildOptions.cmake"
++            "${CMAKE_BINARY_DIR}/${ConfigPackageLocation}/LibVNCServerConfig.cmake"
++            "${CMAKE_BINARY_DIR}/${ConfigPackageLocation}/LibVNCServerConfigVersion.cmake"
++            "${CMAKE_BINARY_DIR}/${ConfigPackageLocation}/LibVNCServerDependencies.cmake"
++            DESTINATION
++                ${ConfigPackageLocation}
++            COMPONENT
++                devel
++        )
++
++    # install Find module
++    install(
++        DIRECTORY
++            "${LIBVNCSERVER__CMAKE__MODULE__DIRECTORY}"
++        DESTINATION
++            ${ConfigPackageLocation}
++        COMPONENT
++            devel
++    )
++endfunction()
