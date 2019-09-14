@@ -12,6 +12,7 @@ class LibvncserverConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = dict({
         "shared": [True, False],
+        "fPIC": [True, False],
         "with_24bpp": [True, False],
 #        "with_gcrypt": [True, False],
 #        "with_gnutls": [True, False],
@@ -29,6 +30,7 @@ class LibvncserverConan(ConanFile):
 
     default_options = dict({
         "shared": False,
+        "fPIC": True,
         "with_24bpp": True,
 #        "with_gcrypt": False,
 #        "with_gnutls": False,
@@ -44,12 +46,13 @@ class LibvncserverConan(ConanFile):
         "with_zlib": True
     })
 
-    generators = "cmake_paths"
+    generators = ["cmake", "cmake_paths"]
     homepage = "https://github.com/LibVNC/libvncserver"
-    build_requires = (("cmake_installer/3.15.3@conan/stable"),
+    build_requires = (
+        #("cmake_installer/3.15.3@conan/stable"),
                       ("ninja_installer/1.9.0@bincrafters/stable" ))
 
-    exports_sources = ['patches/*']
+    exports_sources = ['patches/*', 'conan_requirement.cmake']
     exports = ['version.txt']
 
     folder_name = "libvncserver-LibVNCServer-{}".format( version )
@@ -104,8 +107,8 @@ class LibvncserverConan(ConanFile):
         cmake = CMake(self, set_cmake_flags=True)
         cmake.generator="Ninja"
         cmake.verbose=True
-
-        cmake.definitions["CMAKE_PROJECT_INCLUDE_BEFORE"] = os.path.join( self.build_folder, "conan_paths.cmake")
+        self.output.info( "self.build_folder = {}".format( self.build_folder, ) )
+        cmake.definitions["CMAKE_PROJECT_INCLUDE"] = os.path.join( self.build_folder, "conan_requirement.cmake")
 
         if not self._should_build_test():
             cmake.definitions["BUILD_TESTING"]="OFF"
@@ -129,7 +132,7 @@ class LibvncserverConan(ConanFile):
 
 
 
-        cmake.configure(source_dir="../"+self.folder_name, build_dir="build")
+        cmake.configure(source_dir=self.folder_name)
         return cmake
 
     def _should_build_test(self):
