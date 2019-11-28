@@ -7,7 +7,7 @@ class LibvncserverTestConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
 
-    build_requires = (("cmake_installer/3.15.3@conan/stable"),
+    build_requires = (("cmake_installer/3.16.0@conan/stable"),
                       ("ninja_installer/1.9.0@bincrafters/stable" ))
 
     def build(self):
