@@ -3,7 +3,7 @@ import os
 
 class LibvncserverConan(ConanFile):
     name = "libvncserver"
-    version = tools.load("version.txt")
+    version = tools.load("version.txt").rstrip()
     license = "GPL 2.0"
     author = "David Callu - callu.david at gmail.com"
     url = "https://github.com/ledocc/conan-libvncserver"
