@@ -75,19 +75,19 @@ class LibvncserverConan(ConanFile):
 #        if self.options.with_gnutls:
 #            self.requires("")
         if self.options.with_jpeg:
-            self.requires("libjpeg/9c@bincrafters/stable")
+            self.requires("libjpeg-turbo/2.0.4")
 #        if self.options.with_lzo:
 #            self.requires("")
         if self.options.with_openssl:
-            self.requires("OpenSSL/1.1.1c@conan/stable")
+            self.requires("openssl/1.1.1f")
         if self.options.with_png:
-            self.requires("libpng/1.6.37@bincrafters/stable")
+            self.requires("libpng/1.6.37")
 #        if self.options.with_sasl:
 #            self.requires("")
 #        if self.options.with_systemd:
 #            self.requires("")
         if self.options.with_zlib:
-            self.requires("zlib/1.2.11@conan/stable")
+            self.requires("zlib/1.2.11")
 
 
     def build(self):
