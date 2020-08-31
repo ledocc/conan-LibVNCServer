@@ -48,8 +48,8 @@ class LibvncserverConan(ConanFile):
 
     generators = ["cmake", "cmake_paths"]
     homepage = "https://github.com/LibVNC/libvncserver"
-    build_requires = (("cmake_installer/3.16.0@conan/stable"),
-                      ("ninja_installer/1.9.0@bincrafters/stable" ))
+    build_requires = (("cmake/3.18.0@"),
+                      ("ninja/1.9.0@" ))
 
     exports_sources = ['patches/*', 'conan_requirement.cmake']
     exports = ['version.txt']
