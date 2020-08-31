@@ -79,7 +79,7 @@ class LibvncserverConan(ConanFile):
 #        if self.options.with_lzo:
 #            self.requires("")
         if self.options.with_openssl:
-            self.requires("openssl/1.1.1f")
+            self.requires("openssl/1.1.1g")
         if self.options.with_png:
             self.requires("libpng/1.6.37")
 #        if self.options.with_sasl:
