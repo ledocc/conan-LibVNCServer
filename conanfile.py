@@ -75,7 +75,7 @@ class LibvncserverConan(ConanFile):
 #        if self.options.with_gnutls:
 #            self.requires("")
         if self.options.with_jpeg:
-            self.requires("libjpeg-turbo/2.0.4")
+            self.requires("libjpeg-turbo/2.0.5")
 #        if self.options.with_lzo:
 #            self.requires("")
         if self.options.with_openssl:
